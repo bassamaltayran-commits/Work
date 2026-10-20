@@ -1,0 +1,401 @@
+<title>Service Management Challenge Quiz</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,500;8..60,650&family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: one centered reading column; a sticky score bar like a front-desk status strip; questions as numbered rows, matching sets as answer grids */
+:root {
+  --bg: #f3f5f4;
+  --surface: #ffffff;
+  --ink: #17262b;
+  --muted: #5b6b70;
+  --line: #d7dfdd;
+  --accent: #1f5f66;
+  --accent-soft: #e2eeee;
+  --brass: #94722a;
+  --good: #1d7a45;
+  --good-soft: #e3f3e8;
+  --bad: #b23a2e;
+  --bad-soft: #fbe9e6;
+  --font-display: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --font-body: "Figtree", -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #111a1d; --surface: #182428; --ink: #e6eeee; --muted: #9aaeb1; --line: #2c3c40;
+    --accent: #6fb8bd; --accent-soft: #1d3337; --brass: #d0ac5c;
+    --good: #5fcf8c; --good-soft: #17322a; --bad: #f08a7c; --bad-soft: #3a2220;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #111a1d; --surface: #182428; --ink: #e6eeee; --muted: #9aaeb1; --line: #2c3c40;
+  --accent: #6fb8bd; --accent-soft: #1d3337; --brass: #d0ac5c;
+  --good: #5fcf8c; --good-soft: #17322a; --bad: #f08a7c; --bad-soft: #3a2220;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--ink);
+  font-family: var(--font-body); font-size: 16px; line-height: 1.5;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--surface); }
+.wrap { max-width: 760px; margin: 0 auto; padding-block: 28px 64px; }
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; margin: 0; }
+h1 { font-size: 2rem; line-height: 1.15; font-weight: 650; }
+h2 { font-size: 1.45rem; font-weight: 650; }
+h3 { font-size: 1.1rem; font-weight: 650; }
+.eyebrow { font-size: .75rem; letter-spacing: .1em; text-transform: uppercase; color: var(--brass); font-weight: 700; }
+.intro { display: grid; gap: 10px; margin-bottom: 20px; }
+.intro p { margin: 0; color: var(--muted); max-width: 62ch; }
+
+.bar {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
+  padding: 12px 14px; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px;
+  margin-bottom: 24px;
+}
+.progress { flex: 1 1 180px; min-width: 0; display: grid; gap: 6px; }
+.progress-label { font-size: .85rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.progress-label b { color: var(--ink); font-family: var(--font-mono); }
+.track { height: 6px; background: var(--accent-soft); border-radius: 3px; overflow: hidden; }
+.fill { height: 100%; width: 0; background: var(--accent); transition: width .25s; }
+.toggle { display: flex; align-items: center; gap: 8px; font-size: .9rem; color: var(--muted); cursor: pointer; }
+.toggle input { width: 18px; height: 18px; accent-color: var(--accent); }
+button {
+  font: inherit; font-weight: 600; border-radius: 8px; padding: 9px 16px; cursor: pointer;
+  border: 1px solid var(--accent); background: var(--accent); color: var(--surface);
+}
+button.ghost { background: transparent; color: var(--accent); }
+button:focus-visible, input:focus-visible, select:focus-visible, label.opt:focus-within { outline: 3px solid var(--brass); outline-offset: 2px; }
+
+.result { display: grid; gap: 12px; background: var(--surface); border: 2px solid var(--accent); border-radius: 12px; padding: 18px; margin-bottom: 28px; }
+.score { font-family: var(--font-display); font-size: 2.6rem; font-weight: 650; line-height: 1; font-variant-numeric: tabular-nums; }
+.score small { font-size: 1.1rem; color: var(--muted); font-weight: 500; }
+.breakdown { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; }
+.breakdown div { border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; font-size: .88rem; color: var(--muted); }
+.breakdown b { display: block; color: var(--ink); font-family: var(--font-mono); font-size: 1rem; }
+.result-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+
+section.part { display: grid; gap: 16px; margin-bottom: 36px; }
+.part-head { display: grid; gap: 4px; border-bottom: 2px solid var(--ink); padding-bottom: 8px; }
+.part-head p { margin: 0; color: var(--muted); font-size: .92rem; }
+.chapter { margin-top: 8px; color: var(--accent); }
+
+.q { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; display: grid; gap: 10px; }
+.q.correct { border-color: var(--good); }
+.q.wrong { border-color: var(--bad); }
+.stem { display: flex; gap: 10px; font-weight: 600; }
+.num { font-family: var(--font-mono); color: var(--brass); min-width: 2ch; flex: none; }
+.opts { display: grid; gap: 6px; }
+label.opt {
+  display: flex; gap: 10px; align-items: flex-start; padding: 8px 10px; border-radius: 8px;
+  border: 1px solid var(--line); cursor: pointer; min-width: 0;
+}
+label.opt input { margin-top: 3px; width: 18px; height: 18px; accent-color: var(--accent); flex: none; }
+label.opt.picked { border-color: var(--accent); background: var(--accent-soft); }
+label.opt.is-right { border-color: var(--good); background: var(--good-soft); }
+label.opt.is-wrong { border-color: var(--bad); background: var(--bad-soft); }
+.letter { font-weight: 700; color: var(--muted); flex: none; }
+.feedback { font-size: .9rem; font-weight: 600; }
+.feedback.good { color: var(--good); }
+.feedback.bad { color: var(--bad); }
+
+.set { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: grid; gap: 12px; }
+.bank { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 6px 14px; font-size: .92rem; background: var(--accent-soft); border-radius: 8px; padding: 10px 12px; }
+.bank span b { color: var(--accent); }
+.match { display: grid; grid-template-columns: auto 1fr minmax(120px, 34%); gap: 10px; align-items: center; padding: 10px 0; border-top: 1px solid var(--line); }
+.match .desc { min-width: 0; }
+.match select { width: 100%; font: inherit; padding: 8px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); }
+.match.correct select { border-color: var(--good); background: var(--good-soft); }
+.match.wrong select { border-color: var(--bad); background: var(--bad-soft); }
+.match .feedback { grid-column: 2 / -1; }
+@media (max-width: 520px) {
+  .match { grid-template-columns: auto 1fr; }
+  .match select { grid-column: 2; }
+  h1 { font-size: 1.6rem; }
+}
+.foot { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
+@media (prefers-reduced-motion: reduce) { .fill { transition: none; } }
+</style>
+
+<div class="wrap">
+  <header class="intro">
+    <span class="eyebrow">HMGT · Chapters 1–4 · Challenge set</span>
+    <h1>Service Management Challenge Quiz</h1>
+    <p>A harder set: 20 scenario-based questions, 1 point each (10 multiple choice, 10 matching). Apply the concepts to real cases, then tap Check answers to see your score and the correct answers.</p>
+  </header>
+
+  <div class="bar" id="bar">
+    <div class="progress">
+      <span class="progress-label"><b id="answered">0</b> of 20 answered</span>
+      <div class="track"><div class="fill" id="fill"></div></div>
+    </div>
+    <label class="toggle" for="instant"><input type="checkbox" id="instant"> Show answer right away</label>
+    <button type="button" id="check">Check answers</button>
+  </div>
+
+  <div class="result" id="result" hidden>
+    <span class="eyebrow">Your score</span>
+    <div class="score"><span id="score">0</span> <small>/ 20 · <span id="pct">0</span>%</small></div>
+    <div class="breakdown" id="breakdown"></div>
+    <div class="result-actions">
+      <button type="button" class="ghost" id="jumpWrong">Go to first mistake</button>
+      <button type="button" class="ghost" id="reset1">Start over</button>
+    </div>
+  </div>
+
+  <section class="part" id="partA">
+    <div class="part-head">
+      <h2>Part A — Multiple choice</h2>
+      <p>Questions 1–10. Choose the one best answer.</p>
+    </div>
+    <div id="mcq"></div>
+  </section>
+
+  <section class="part" id="partB">
+    <div class="part-head">
+      <h2>Part B — Matching</h2>
+      <p>Questions 11–20. Pick the matching option for each item. Each set has seven options; two are not used.</p>
+    </div>
+    <div id="sets" style="display:grid;gap:16px"></div>
+  </section>
+
+  <div class="foot">
+    <button type="button" id="check2">Check answers</button>
+    <button type="button" class="ghost" id="reset2">Start over</button>
+  </div>
+</div>
+
+<script>
+(function () {
+  var MCQ = [
+    { q: "A guest books an airport transfer and enters the flight number. The flight is delayed two hours; the transport coordinator sees the delay but tells no one, and the driver reports a no-show. What most directly caused the missed pickup?", o: ["The driver lacked courtesy toward the guest", "A back-stage handoff failed: the information never reached the people who owned the action", "The guest entered the wrong flight number", "Self-service technology replaced human judgment"], a: 1 },
+    { q: "At 00:15 the stranded guest calls the hotel. The night receptionist promises a replacement car “very soon” without checking availability, price, or arrival time. Which encounter checklist step does the phrase “very soon” most clearly violate?", o: ["Welcome", "Confirm", "Record and follow up", "Set expectations"], a: 3 },
+    { q: "A hotel advertises a “seamless arrival.” Which finding best shows the promise is not yet operationally realistic?", o: ["The lobby furniture is modern and comfortable", "Reception staff are trained to smile and greet every guest", "Room status is checked only after ID verification, so guests with unready rooms wait in the same line as guests who can check in", "The marketing budget for the campaign has doubled"], a: 2 },
+    { q: "Many guests choose the wrong dietary filter on a restaurant’s self-ordering tablet. According to Chapter 2, which response best fits good participation design?", o: ["Add clearer on-screen prompts and have staff confirm critical details such as allergies", "Add a disclaimer that guests are responsible for their own choices", "Remove the tablets and return to paper menus", "Retrain guests by emailing them the ordering rules"], a: 0 },
+    { q: "A resort standardizes room inspections with a checklist, lets guests book spa slots in an app, and uses CRM notes so guest-relations staff can personalize each welcome. Which description is most accurate?", o: ["It uses only a production-line approach", "It uses only a customer-contact approach", "It relies on guests as coproducers and nothing else", "It combines production-line, customer-as-coproducer, information-empowerment, and customer-contact approaches"], a: 3 },
+    { q: "At a drive-thru, the kitchen produces food faster than the windows can hand it out, and one employee takes orders, payments, and hands out food. Where is the bottleneck?", o: ["The kitchen, because it produces the most output", "The parking lot entrance, because cars block it", "The window stage staffed by one employee, because it limits the flow of the whole process", "The menu board, because it is the first step"], a: 2 },
+    { q: "Which handoff message is the strongest?", o: ["“Room 512 AC leak. Sara will inspect within 20 minutes.”", "“Room 512 AC leak. Sara owns it; inspect within 20 minutes; update the front desk and guest after testing.”", "“Room 512 AC leak. Maintenance, please check ASAP and update the front desk.”", "“AC leak reported. Sara owns it; update the guest after the repair.”"], a: 1 },
+    { q: "A guest says they need a quiet workspace for an online meeting. The receptionist says “Your room should be fine” without checking; the room is next to a service elevator, the desk is too small, and Wi-Fi instructions are missing. Which three dimensions are most relevant?", o: ["Empathy, assurance, and tangibles", "Reliability only, because the room was available", "Responsiveness and perishability", "Tangibles only, because the problems are physical"], a: 0 },
+    { q: "A resort standard reads: “All complaints acknowledged within 10 minutes and closed within 24 hours.” An AC noise complaint is closed after one reset, although the noise returned that night. Which rewrite best measures actual resolution?", o: ["Close all complaints within 12 hours", "Acknowledge all complaints within 5 minutes", "Close a complaint only after the guest confirms the problem is fixed, with a follow-up check recorded", "Remove time limits so staff are not rushed"], a: 2 },
+    { q: "A budget hotel meets a guest’s expectations; a luxury hotel misses them slightly. The same guest rates the budget hotel higher. What best explains this?", o: ["Budget hotels usually have better tangibles", "Quality is judged against expectations, and the luxury hotel’s price and promises raised them", "Guests always prefer the cheaper option", "Luxury hotels are less reliable by design"], a: 1 }
+  ];
+
+  var SETS = [
+    { title: "Set 1: Diagnose the problem", col: "Situation",
+      opts: ["Bottleneck", "Poor handoff", "Quality gap (promise vs. delivery)", "Servicescape problem (layout or signs)", "Over-standardized script", "Implicit benefit", "Customer-as-coproducer approach"],
+      items: [
+        ["A breakfast card promises “quick and convenient,” but a family waits 18 minutes with no update", 2],
+        ["The host stand is hidden behind a decorative plant, so arriving guests line up beside the bar", 3],
+        ["A receptionist gives a wheelchair user the standard bus-stop directions, even though the route has stairs", 4],
+        ["An allergy entered only in free-text notes never appears on the kitchen’s production screen", 1],
+        ["One officer checking boarding passes limits how many passengers reach the scanners", 0]
+      ] },
+    { title: "Set 2: Fine-dining service blueprint", col: "Blueprint entry",
+      opts: ["Guest action", "Physical evidence", "Visible employee action", "Invisible employee action", "Support process", "Failure point", "Implicit benefit"],
+      items: [
+        ["Server confirms doneness and allergies, then repeats the order back", 2],
+        ["Host checks table readiness and alerts the server that the party has arrived", 3],
+        ["Kitchen display system, beverage inventory, and POS", 4],
+        ["Bill folder, card machine, and receipt", 1],
+        ["Allergy not recorded at reservation; table not ready on arrival", 5]
+      ] }
+  ];
+
+  var L = "ABCDEFG";
+  var NMCQ = 10, TOTAL = 20;
+  var KEY = "hmgt-challenge-quiz-v1";
+  var answers = {};   // question number -> chosen index
+  var correct = {};   // question number -> correct index
+  var checked = false;
+  var instant = false;
+
+  function el(tag, cls, text) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text != null) e.textContent = text;
+    return e;
+  }
+
+  // ---- build Part A
+  var mcqBox = document.getElementById("mcq");
+  mcqBox.style.display = "grid"; mcqBox.style.gap = "12px";
+  var n = 0;
+  MCQ.forEach(function (item) {
+    if (item.ch) { mcqBox.appendChild(el("h3", "chapter", item.ch)); return; }
+    n++;
+    var num = n;
+    correct[num] = item.a;
+    var card = el("div", "q"); card.id = "q" + num; card.setAttribute("data-num", num);
+    var stem = el("div", "stem");
+    stem.appendChild(el("span", "num", num + "."));
+    stem.appendChild(el("span", null, item.q));
+    card.appendChild(stem);
+    var opts = el("div", "opts");
+    item.o.forEach(function (text, i) {
+      var lab = el("label", "opt");
+      var inp = document.createElement("input");
+      inp.type = "radio"; inp.name = "q" + num; inp.value = i; inp.id = "q" + num + "o" + i;
+      lab.setAttribute("for", inp.id);
+      lab.appendChild(inp);
+      lab.appendChild(el("span", "letter", L[i] + "."));
+      lab.appendChild(el("span", null, text));
+      inp.addEventListener("change", function () { setAnswer(num, i); });
+      opts.appendChild(lab);
+    });
+    card.appendChild(opts);
+    var fb = el("div", "feedback"); fb.hidden = true; card.appendChild(fb);
+    mcqBox.appendChild(card);
+  });
+
+  // ---- build Part B
+  var setsBox = document.getElementById("sets");
+  SETS.forEach(function (set) {
+    var box = el("div", "set");
+    box.appendChild(el("h3", null, set.title));
+    var bank = el("div", "bank");
+    set.opts.forEach(function (o, i) {
+      var s = el("span"); var b = el("b", null, L[i] + ". "); s.appendChild(b); s.appendChild(document.createTextNode(o)); bank.appendChild(s);
+    });
+    box.appendChild(bank);
+    set.items.forEach(function (it) {
+      n++;
+      var num = n;
+      correct[num] = it[1];
+      var row = el("div", "match"); row.id = "q" + num; row.setAttribute("data-num", num);
+      row.appendChild(el("span", "num", num + "."));
+      row.appendChild(el("span", "desc", it[0]));
+      var sel = document.createElement("select");
+      sel.id = "s" + num; sel.setAttribute("aria-label", "Answer for question " + num);
+      var blank = document.createElement("option"); blank.value = ""; blank.textContent = "Choose…"; sel.appendChild(blank);
+      set.opts.forEach(function (o, i) {
+        var op = document.createElement("option"); op.value = i; op.textContent = L[i] + ". " + o; sel.appendChild(op);
+      });
+      sel.addEventListener("change", function () { setAnswer(num, sel.value === "" ? null : parseInt(sel.value, 10)); });
+      row.appendChild(sel);
+      var fb = el("div", "feedback"); fb.hidden = true; row.appendChild(fb);
+      box.appendChild(row);
+      row._opts = set.opts;
+    });
+    setsBox.appendChild(box);
+  });
+
+  function setAnswer(num, idx) {
+    if (idx === null) delete answers[num]; else answers[num] = idx;
+    save();
+    updateProgress();
+    paint(num);
+    if (checked) score();
+  }
+
+  function updateProgress() {
+    var c = Object.keys(answers).length;
+    document.getElementById("answered").textContent = c;
+    document.getElementById("fill").style.width = (c / TOTAL * 100) + "%";
+  }
+
+  function reveal(num) { return checked || (instant && answers[num] != null); }
+
+  function paint(num) {
+    var card = document.getElementById("q" + num);
+    var fb = card.querySelector(".feedback");
+    var a = answers[num], r = correct[num], show = reveal(num);
+    card.classList.remove("correct", "wrong");
+    if (num <= NMCQ) {
+      var labs = card.querySelectorAll("label.opt");
+      for (var i = 0; i < labs.length; i++) {
+        labs[i].classList.remove("picked", "is-right", "is-wrong");
+        if (a === i) labs[i].classList.add("picked");
+        if (show && i === r) labs[i].classList.add("is-right");
+        if (show && a === i && i !== r) labs[i].classList.add("is-wrong");
+      }
+    }
+    if (!show) { fb.hidden = true; return; }
+    fb.hidden = false;
+    if (a === r) {
+      card.classList.add("correct"); fb.className = "feedback good"; fb.textContent = "Correct";
+    } else {
+      card.classList.add("wrong"); fb.className = "feedback bad";
+      var name = num <= NMCQ ? "" : " " + card._opts[r];
+      fb.textContent = (a == null ? "Not answered. " : "Incorrect. ") + "Answer: " + L[r] + "." + name;
+    }
+  }
+
+  function paintAll() { for (var i = 1; i <= TOTAL; i++) paint(i); }
+
+  function score() {
+    var groups = [["Multiple choice", 1, 10], ["Matching", 11, 20]];
+    var total = 0, bd = document.getElementById("breakdown");
+    bd.innerHTML = "";
+    groups.forEach(function (g) {
+      var s = 0;
+      for (var i = g[1]; i <= g[2]; i++) if (answers[i] === correct[i]) s++;
+      total += s;
+      var d = el("div"); d.appendChild(el("b", null, s + " / 10")); d.appendChild(document.createTextNode(g[0])); bd.appendChild(d);
+    });
+    document.getElementById("score").textContent = total;
+    document.getElementById("pct").textContent = Math.round(total / TOTAL * 100);
+  }
+
+  function check() {
+    checked = true;
+    paintAll(); score();
+    var r = document.getElementById("result");
+    r.hidden = false;
+    save();
+    r.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  function reset() {
+    answers = {}; checked = false;
+    var ins = document.querySelectorAll("input[type=radio]");
+    for (var i = 0; i < ins.length; i++) ins[i].checked = false;
+    var sels = document.querySelectorAll(".match select");
+    for (var j = 0; j < sels.length; j++) sels[j].value = "";
+    document.getElementById("result").hidden = true;
+    paintAll(); updateProgress(); save();
+    window.scrollTo(0, 0);
+  }
+
+  function firstWrong() {
+    for (var i = 1; i <= TOTAL; i++) if (answers[i] !== correct[i]) {
+      document.getElementById("q" + i).scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
+    }
+  }
+
+  function save() {
+    try { localStorage.setItem(KEY, JSON.stringify({ a: answers, c: checked, i: instant })); } catch (e) {}
+  }
+  function load() {
+    try {
+      var d = JSON.parse(localStorage.getItem(KEY) || "null");
+      if (!d) return;
+      answers = d.a || {}; checked = !!d.c; instant = !!d.i;
+      Object.keys(answers).forEach(function (k) {
+        var num = parseInt(k, 10), v = answers[k];
+        if (num <= NMCQ) { var inp = document.getElementById("q" + num + "o" + v); if (inp) inp.checked = true; }
+        else { var s = document.getElementById("s" + num); if (s) s.value = String(v); }
+      });
+    } catch (e) {}
+  }
+
+  var instantBox = document.getElementById("instant");
+  instantBox.addEventListener("change", function () { instant = instantBox.checked; save(); paintAll(); });
+  document.getElementById("check").addEventListener("click", check);
+  document.getElementById("check2").addEventListener("click", check);
+  document.getElementById("reset1").addEventListener("click", reset);
+  document.getElementById("reset2").addEventListener("click", reset);
+  document.getElementById("jumpWrong").addEventListener("click", firstWrong);
+
+  load();
+  instantBox.checked = instant;
+  updateProgress(); paintAll();
+  if (checked) { score(); document.getElementById("result").hidden = false; }
+})();
+</script>
