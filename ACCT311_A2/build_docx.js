@@ -21,7 +21,7 @@ const c=[];
 c.push(new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:60},children:[new TextRun({text:"University of Prince Mugrin",font:F,size:24,bold:true})]}));
 c.push(new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:60},children:[new TextRun({text:"ACCT 311 – Managerial Accounting for Hospitality",font:F,size:24})]}));
 c.push(new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:240},children:[new TextRun({text:"Assignment 2: Scenario-Based Hospitality Operating Budget and Management Recommendation",font:F,size:28,bold:true})]}));
-c.push(tbl([["Item","Details"],["Student name","Bassam Khalid Eissa Altayran"],["Student ID","4411839"],["Section","[SECTION]"],["Instructor","Dr. Malik Mohammed"],["Case","Al Manar City Hotel – one-month operating budget"],["Submission date","[DATE]"]],[2800,6560]));
+c.push(tbl([["Item","Details"],["Student name","Bassam Khalid Eissa Altayran"],["Student ID","4411839"],["Instructor","Dr. Malik Mohammed"],["Case","Al Manar City Hotel – one-month operating budget"]],[2800,6560]));
 c.push(sp());
 
 c.push(h1("1. Expected-Case Assumptions"));
