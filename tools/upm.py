@@ -44,7 +44,7 @@ def newp():
 def borders(tbl):
     tblPr=tbl._tbl.tblPr; b=OxmlElement('w:tblBorders')
     for e in ['top','left','bottom','right','insideH','insideV']:
-        x=OxmlElement('w:'+e); x.set(qn('w:val'),'single'); x.set(qn('w:sz'),'4'); x.set(qn('w:color'),'000000'); b.append(x)
+        x=OxmlElement('w:'+e); x.set(qn('w:val'),'single'); x.set(qn('w:sz'),'4'); x.set(qn('w:color'),'1AA7A7'); b.append(x)
     tblPr.append(b)
 def shade(cell,fill):
     tcPr=cell._tc.get_or_add_tcPr(); s=OxmlElement('w:shd'); s.set(qn('w:val'),'clear'); s.set(qn('w:color'),'auto'); s.set(qn('w:fill'),fill); tcPr.append(s)
@@ -81,9 +81,10 @@ for i,bk in enumerate(blocks):
                 cp=cell.paragraphs[0]; fmt(cp,A.RIGHT if (bk['right'] and ci>0 and ri>0) else A.LEFT,0,1.0)
                 if ri<len(rows)-1: cp.paragraph_format.keep_with_next=True
                 hb= ri==0 or ri in bk['bold']
-                addrun(cp,str(val),hb)
-                if ri==0: shade(cell,'D9D9D9')
-                elif ri in bk['bold']: shade(cell,'F2F2F2')
+                r=addrun(cp,str(val),hb)
+                if ri==0: shade(cell,'00507F'); r.font.color.rgb=docx.shared.RGBColor(0xFF,0xFF,0xFF)
+                elif ri in bk['bold']: shade(cell,'FBEFD5')
+                elif ri%2==0: shade(cell,'EAF6F6')
         cw=[int(x*TW/s) for x in w]
         grid=tb._tbl.tblGrid
         for gc,wv in zip(grid.findall(qn('w:gridCol')),cw): gc.set(qn('w:w'),str(wv))
