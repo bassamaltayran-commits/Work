@@ -54,10 +54,12 @@ p=newp(); fmt(p,A.CENTER,12,keep=True); addrun(p,header.split(': ',1)[1] if ': '
 # page break before title so content starts on page 2
 p.paragraph_format.page_break_before=True
 blocks=json.load(open(content))
+BRK=set(x for x in os.environ.get('UPM_BREAKS','').split('|') if x)
 for i,bk in enumerate(blocks):
     t=bk['type']
     if t=='h1':
         p=newp(); fmt(p,A.CENTER,6,before=6,keep=True); addrun(p,bk['text'],True)
+        if bk['text'] in BRK: p.paragraph_format.page_break_before=True
         if i>0 and blocks[i-1]['type']=='pagebreak': p.paragraph_format.page_break_before=True
     elif t=='h2':
         p=newp(); fmt(p,A.LEFT,6,before=4,keep=True); addrun(p,bk['text'],True,True)
